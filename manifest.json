@@ -1,0 +1,8 @@
+{
+  "domain": "hibouair_ble",
+  "name": "Hibouair BLE",
+  "dependencies": [],
+  "codeowners": [],
+  "requirements": ["bleuio==1.3.1"],
+  "version": "0.1"
+}
