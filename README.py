@@ -1,6 +1,6 @@
 #add this lines to configuration.yaml
 sensor: 
-    - platform: hibouair_ble
+  - platform: hibouair_ble
     scan_interval: 120
 
 #Sample Entities Card configuration

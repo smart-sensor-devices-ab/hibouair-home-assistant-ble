@@ -19,6 +19,13 @@ def my_scan_callback(scan_input):
     mydata = scan_input
 
 
+def convertNumber(data, start, end):
+    pos = data.find("5B070")
+    return int.from_bytes(
+        bytes.fromhex(data[pos + start : pos + start + end])[::-1], byteorder="big"
+    )
+
+
 def adv_data_decode(data):
     pos = data.find("5B070")
     dt = datetime.now()
@@ -31,7 +38,7 @@ def adv_data_decode(data):
 
     env_data = {
         "boardID": data[pos + 8 : pos + 8 + 6],
-        "type": int(data[pos + 6 : pos + 6 + 2]),
+        "type": int(data[pos + 6 : pos + 6 + 2], 16),
         "light": convertNumber(data, 14, 4),
         "pressure": convertNumber(data, 18, 4) / 10,
         "temp": temp_hex,
@@ -46,13 +53,6 @@ def adv_data_decode(data):
     }
 
     return env_data
-
-
-def convertNumber(data, start, end):
-    pos = data.find(DEVICEID)
-    return int.from_bytes(
-        bytes.fromhex(data[pos + start : pos + start + end])[::-1], byteorder="big"
-    )
 
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
@@ -96,9 +96,10 @@ async def async_update_data():
         my_dongle.register_scan_cb(my_scan_callback)
         my_dongle.at_dual()
     try:
-        my_dongle.at_findscandata("220069", 3)
+        my_dongle.at_findscandata(DEVICEID, 3)
         time.sleep(3)
         data_list = json.loads(mydata[0])
+        _LOGGER.error(str(data_list["data"]))
         parsed_data = adv_data_decode(str(data_list["data"]))
         my_dongle.stop_scan()
         temperature = parsed_data.get("temp")
@@ -112,8 +113,6 @@ async def async_update_data():
         als = parsed_data.get("light")
         ts = parsed_data.get("ts")
         _LOGGER.error(parsed_data)
-
-        # _LOGGER.error("BLE here: %s", hex_manufacturer_data)
 
         return {
             "temperature": temperature,
